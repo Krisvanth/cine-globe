@@ -100,6 +100,9 @@ export const GlobeScene: React.FC<GlobeSceneProps> = ({
         ? (isPortrait ? 9.5 : 4.6)
         : (isPortrait ? 8.0 : 3.2);
 
+      // Add 2-3 full spins for cinematic momentum
+      const spinRotations = Math.PI * (Math.random() > 0.5 ? 4 : 6);
+
       spinStateRef.current = {
         active: true,
         progress: 0,
