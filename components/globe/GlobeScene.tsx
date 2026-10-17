@@ -92,8 +92,13 @@ export const GlobeScene: React.FC<GlobeSceneProps> = ({
       const currentRotX = earthGroupRef.current.rotation.x;
       const currentRotY = earthGroupRef.current.rotation.y;
 
-      // Add 2-3 full spins for cinematic momentum
-      const spinRotations = Math.PI * (Math.random() > 0.5 ? 4 : 6);
+      // Compute responsive target zoom based on viewport aspect ratio
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const isPortrait = w / h < 1.0;
+      const targetZoom = reducedMotion
+        ? (isPortrait ? 9.5 : 4.6)
+        : (isPortrait ? 8.0 : 3.2);
 
       spinStateRef.current = {
         active: true,
@@ -104,7 +109,7 @@ export const GlobeScene: React.FC<GlobeSceneProps> = ({
         targetRotX: targetRotX,
         targetRotY: currentRotY + spinRotations + (targetRotY - (currentRotY % (Math.PI * 2))),
         startZoom: cameraRef.current.position.z,
-        targetZoom: reducedMotion ? 4.6 : 3.2,
+        targetZoom,
       };
 
       // Position and orient the precision navigator pin on the target country
@@ -152,9 +157,15 @@ export const GlobeScene: React.FC<GlobeSceneProps> = ({
       const scene = new THREE.Scene();
       sceneRef.current = scene;
 
-      // Camera: positioned at 5.4 to frame the globe comfortably in center with no edge clipping
-      const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
-      camera.position.z = 5.4;
+      // Responsive camera distance to fit globe perfectly on both desktop and mobile portrait
+      const aspect = width / height;
+      const initialZ =
+        aspect < 1.0
+          ? Math.max(6.5, Math.min(4.8 / (2 * Math.tan((20 * Math.PI) / 180) * aspect), 14.5))
+          : 5.4;
+
+      const camera = new THREE.PerspectiveCamera(40, aspect, 0.1, 1000);
+      camera.position.z = initialZ;
       cameraRef.current = camera;
 
       // Renderer with 4K color fidelity and high pixel ratio
@@ -196,6 +207,9 @@ export const GlobeScene: React.FC<GlobeSceneProps> = ({
 
       // Earth Group
       const earthGroup = new THREE.Group();
+      if (aspect < 1.0) {
+        earthGroup.position.y = 0.35;
+      }
       scene.add(earthGroup);
       earthGroupRef.current = earthGroup;
 
@@ -463,7 +477,17 @@ export const GlobeScene: React.FC<GlobeSceneProps> = ({
         if (!container || !rendererRef.current || !cameraRef.current) return;
         const w = container.clientWidth || window.innerWidth;
         const h = container.clientHeight || window.innerHeight;
-        cameraRef.current.aspect = w / h;
+        const asp = w / h;
+        cameraRef.current.aspect = asp;
+        if (!spinStateRef.current.active) {
+          cameraRef.current.position.z =
+            asp < 1.0
+              ? Math.max(6.5, Math.min(4.8 / (2 * Math.tan((20 * Math.PI) / 180) * asp), 14.5))
+              : 5.4;
+        }
+        if (earthGroupRef.current) {
+          earthGroupRef.current.position.y = asp < 1.0 ? 0.35 : 0;
+        }
         cameraRef.current.updateProjectionMatrix();
         rendererRef.current.setSize(w, h);
       };

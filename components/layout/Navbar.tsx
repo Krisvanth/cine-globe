@@ -47,6 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
   const [results, setResults] = useState<Movie[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState<boolean>(false);
   const [movieToRate, setMovieToRate] = useState<Movie | null>(null);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
@@ -187,80 +188,139 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
 
   return (
     <>
-      <header className="fixed top-3 sm:top-4 left-0 right-0 z-40 px-3 sm:px-6 pointer-events-none flex justify-center animate-in fade-in slide-in-from-top-2 duration-300">
-        <div className="pointer-events-auto flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#0a0b10]/90 backdrop-blur-xl border border-[#d4af37]/30 shadow-[0_8px_32px_rgba(0,0,0,0.6)] hover:border-[#d4af37]/50 transition-all duration-300 relative">
-          {/* Brand */}
-          <Link href="/" className="flex items-center gap-2 group pr-2 sm:pr-3 border-r border-white/10 shrink-0">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#d4af37]/30 via-[#d4af37] to-amber-200 flex items-center justify-center text-black font-bold shadow-sm shadow-[#d4af37]/30 group-hover:scale-105 transition-transform duration-300">
-              <Film className="w-3.5 h-3.5 text-black stroke-[2.2]" />
-            </div>
-            <span className="font-extrabold tracking-wider text-xs sm:text-sm text-white group-hover:text-[#e5c07b] transition-colors">
-              CINE<span className="text-[#d4af37]">GLOBE</span>
-            </span>
-          </Link>
-
-          {/* Center Nav Links */}
-          <nav className="flex items-center gap-1 shrink-0">
-            {navLinks.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`relative px-2 sm:px-3 py-1 rounded-full text-xs font-medium tracking-wide flex items-center gap-1.5 transition-all duration-200 ${
-                    isActive
-                      ? 'text-white bg-white/15 shadow-inner border border-white/15'
-                      : 'text-zinc-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#d4af37]' : 'text-zinc-400'}`} />
-                  <span className="hidden md:inline">{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Header Search Bar */}
-          <div ref={searchRef} className="relative">
-            <div className="relative flex items-center">
-              <div className="absolute left-2.5 text-zinc-400 pointer-events-none">
-                {isSearching ? (
-                  <Loader2 className="w-3.5 h-3.5 text-[#d4af37] animate-spin" />
-                ) : (
-                  <Search className="w-3.5 h-3.5" />
-                )}
-              </div>
+      <header className="fixed top-2.5 sm:top-4 left-0 right-0 z-40 px-2 sm:px-6 pointer-events-none flex justify-center animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="pointer-events-auto flex items-center justify-between gap-1 sm:gap-3 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#0a0b10]/95 backdrop-blur-xl border border-[#d4af37]/35 shadow-[0_8px_32px_rgba(0,0,0,0.7)] hover:border-[#d4af37]/50 transition-all duration-300 relative w-full max-w-[calc(100vw-1rem)] sm:max-w-fit mx-auto">
+          {/* Mobile Full-Width Search Mode */}
+          {isMobileSearchOpen ? (
+            <div className="flex items-center gap-2 w-full px-1 py-0.5 sm:hidden animate-in fade-in duration-200">
+              <Search className="w-4 h-4 text-[#d4af37] shrink-0" />
               <input
                 type="text"
+                autoFocus
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
                   setIsDropdownOpen(true);
                 }}
-                onFocus={() => {
-                  if (results.length > 0) setIsDropdownOpen(true);
-                }}
                 placeholder="Search films..."
-                className="w-28 sm:w-44 md:w-56 focus:w-48 sm:focus:w-60 md:focus:w-64 pl-8 pr-7 py-1 rounded-full bg-white/5 border border-white/10 text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all duration-300"
+                className="flex-1 bg-transparent text-white placeholder-zinc-500 text-xs focus:outline-none"
               />
               {query && (
                 <button
+                  type="button"
                   onClick={() => {
                     setQuery('');
                     setResults([]);
-                    setIsDropdownOpen(false);
                   }}
-                  className="absolute right-2 text-zinc-400 hover:text-white p-0.5"
+                  className="text-zinc-400 hover:text-white p-1"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileSearchOpen(false);
+                  setQuery('');
+                  setResults([]);
+                  setIsDropdownOpen(false);
+                }}
+                className="text-xs text-zinc-400 hover:text-white px-2 py-0.5 rounded-full bg-white/5 border border-white/10 shrink-0"
+              >
+                Cancel
+              </button>
             </div>
+          ) : (
+            /* Regular Desktop and Compact Mobile Header */
+            <>
+              {/* Brand */}
+              <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group pr-1.5 sm:pr-3 border-r border-white/10 shrink-0">
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-tr from-[#d4af37]/30 via-[#d4af37] to-amber-200 flex items-center justify-center text-black font-bold shadow-sm shadow-[#d4af37]/30 group-hover:scale-105 transition-transform duration-300 shrink-0">
+                  <Film className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-black stroke-[2.2]" />
+                </div>
+                <span className="font-extrabold tracking-wider text-[11px] sm:text-sm text-white group-hover:text-[#e5c07b] transition-colors whitespace-nowrap">
+                  CINE<span className="text-[#d4af37]">GLOBE</span>
+                </span>
+              </Link>
 
-            {/* Header Closest Matches Dropdown */}
-            {isDropdownOpen && query.trim().length >= 2 && (
-              <div className="absolute top-full mt-3 right-0 sm:left-1/2 sm:-translate-x-1/2 w-[calc(100vw-2rem)] sm:w-[380px] max-h-[420px] rounded-2xl bg-[#0e0f17]/98 border border-[#d4af37]/30 shadow-[0_16px_40px_rgba(0,0,0,0.85)] backdrop-blur-2xl overflow-hidden flex flex-col z-50">
+              {/* Center Nav Links */}
+              <nav className="flex items-center gap-0.5 sm:gap-1 shrink-0">
+                {navLinks.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`relative p-1.5 sm:px-3 sm:py-1 rounded-full text-xs font-medium tracking-wide flex items-center gap-1.5 transition-all duration-200 ${
+                        isActive
+                          ? 'text-white bg-white/15 shadow-inner border border-white/15'
+                          : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                      }`}
+                      title={item.label}
+                    >
+                      <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#d4af37]' : 'text-zinc-400'}`} />
+                      <span className="hidden md:inline">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              {/* Search: Mobile Icon Button & Desktop Search Input */}
+              <div ref={searchRef} className="relative shrink-0 sm:shrink">
+                {/* Mobile Search Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsMobileSearchOpen(true)}
+                  className="sm:hidden p-1.5 rounded-full text-zinc-300 hover:text-white hover:bg-white/10 transition-colors flex items-center justify-center shrink-0"
+                  title="Search films"
+                  aria-label="Search films"
+                >
+                  <Search className="w-3.5 h-3.5 text-[#d4af37]" />
+                </button>
+
+                {/* Desktop Search Bar */}
+                <div className="hidden sm:flex relative items-center">
+                  <div className="absolute left-2.5 text-zinc-400 pointer-events-none">
+                    {isSearching ? (
+                      <Loader2 className="w-3.5 h-3.5 text-[#d4af37] animate-spin" />
+                    ) : (
+                      <Search className="w-3.5 h-3.5" />
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => {
+                      setQuery(e.target.value);
+                      setIsDropdownOpen(true);
+                    }}
+                    onFocus={() => {
+                      if (results.length > 0) setIsDropdownOpen(true);
+                    }}
+                    placeholder="Search films..."
+                    className="w-40 md:w-56 focus:w-52 md:focus:w-64 pl-8 pr-7 py-1 rounded-full bg-white/5 border border-white/10 text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all duration-300"
+                  />
+                  {query && (
+                    <button
+                      onClick={() => {
+                        setQuery('');
+                        setResults([]);
+                        setIsDropdownOpen(false);
+                      }}
+                      className="absolute right-2 text-zinc-400 hover:text-white p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Centered Closest Matches Dropdown */}
+          {isDropdownOpen && query.trim().length >= 2 && (
+            <div className="absolute top-full mt-2.5 left-1/2 -translate-x-1/2 w-[calc(100vw-1.5rem)] sm:w-[380px] max-h-[420px] rounded-2xl bg-[#0e0f17]/98 border border-[#d4af37]/30 shadow-[0_16px_40px_rgba(0,0,0,0.85)] backdrop-blur-2xl overflow-hidden flex flex-col z-50">
                 <div className="overflow-y-auto divide-y divide-white/5">
                   {isSearching && results.length === 0 ? (
                     <div className="p-6 text-center text-xs text-zinc-400 flex items-center justify-center gap-2">
@@ -373,14 +433,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
                 </div>
               </div>
             )}
-          </div>
 
           {/* Right Action (User Profile / Sign In) */}
           <div className="pl-1 sm:pl-2 border-l border-white/10 shrink-0">
             {user || localProfile?.isLoggedIn ? (
               <button
                 onClick={onOpenAuth}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium tracking-wide border border-[#d4af37]/40 bg-[#0c0d14]/90 text-[#e5c07b] hover:border-[#d4af37] hover:bg-[#d4af37]/10 transition-all cursor-pointer shadow-sm"
+                className="flex items-center gap-1 sm:gap-1.5 p-1 sm:px-2.5 sm:py-1 rounded-full text-xs font-medium tracking-wide border border-[#d4af37]/40 bg-[#0c0d14]/90 text-[#e5c07b] hover:border-[#d4af37] hover:bg-[#d4af37]/10 transition-all cursor-pointer shadow-sm"
                 title={`Signed in as ${displayName}`}
               >
                 {avatarId ? (
@@ -401,12 +460,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
                 <span className="hidden sm:inline font-semibold text-white">
                   {displayName}
                 </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse hidden sm:inline-block" />
               </button>
             ) : (
               <Link
                 href="/login"
-                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide border border-[#d4af37]/40 bg-[#d4af37]/15 text-[#e5c07b] hover:bg-[#d4af37] hover:text-black transition-all cursor-pointer shadow-sm active:scale-95"
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold tracking-wide border border-[#d4af37]/40 bg-[#d4af37]/15 text-[#e5c07b] hover:bg-[#d4af37] hover:text-black transition-all cursor-pointer shadow-sm active:scale-95"
               >
                 <User className="w-3.5 h-3.5" />
                 <span>Sign In</span>
